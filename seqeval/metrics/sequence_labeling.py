@@ -12,11 +12,13 @@ from collections import defaultdict
 import numpy as np
 
 
-def get_entities(seq, suffix=False):
+def get_entities(seq, suffix=False, attribute_info=False):
     """Gets entities from sequence.
 
     Args:
         seq (list): sequence of labels.
+        attribute_info: a special tag set including attribute information. It starts with I tag and ends with E tag decorated with attribute
+        information. Example: I-Family, E-Family_AttributeInfo
 
     Returns:
         list: list of (chunk_type, chunk_start, chunk_end).
@@ -35,16 +37,25 @@ def get_entities(seq, suffix=False):
     prev_type = ''
     begin_offset = 0
     chunks = []
+    attribute = ""
     for i, chunk in enumerate(seq + ['O']):
         if suffix:
             tag = chunk[-1]
             type_ = chunk.split('-')[0]
+        elif attribute_info:
+            tag = chunk[0]
+            try:
+                type_ = chunk[:chunk.index('_')].split('-')[-1]
+                attribute = chunk[chunk.index('_'):]
+            except:
+                type_ = chunk.split('-')[-1]
         else:
             tag = chunk[0]
             type_ = chunk.split('-')[-1]
 
         if end_of_chunk(prev_tag, tag, prev_type, type_):
-            chunks.append((prev_type, begin_offset, i-1))
+            chunks.append((f"{prev_type}{attribute}", begin_offset, i-1))
+            attribute = ""
         if start_of_chunk(prev_tag, tag, prev_type, type_):
             begin_offset = i
         prev_tag = tag

@@ -34,6 +34,19 @@ class TestMetrics(unittest.TestCase):
     def test_get_entities(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true), [('MISC', 3, 5), ('PER', 7, 8)])
+    
+    def test_get_entities_with_attribute(self):
+        y_true = ['O', 'O', 'O', 'E-FamilyMember_Daughter_NA', 'O']
+        self.assertEqual(get_entities(y_true, attribute_info=True), [('FamilyMember_Daughter_NA', 3, 3)])
+
+        y_true = ['I-FamilyMember', 'E-FamilyMember_Brother_NA', 'O', 'O']
+        self.assertEqual(get_entities(y_true, attribute_info=True), [('FamilyMember_Brother_NA', 0, 1)])
+
+        y_true = ['O', 'E-FamilyMember_Sister_NA', 'O','O', 'O', 'B-Observation', 'I-Observation', 'I-Observation', 'O', 'B-Observation', 'O', 'O']
+        self.assertEqual(get_entities(y_true, attribute_info=True), [('FamilyMember_Sister_NA', 1, 1), ('Observation', 5, 7), ('Observation', 9, 9)])
+        
+        y_true = ['O', 'I-FamilyMember', 'I-FamilyMember', 'E-FamilyMember_Cousin_Paternal', 'O','O', 'O', 'B-Observation']
+        self.assertEqual(get_entities(y_true, attribute_info=True), [('FamilyMember_Cousin_Paternal', 1, 3), ('Observation', 7, 7)])
 
     def test_get_entities_with_suffix_style(self):
         y_true = ['O', 'O', 'O', 'MISC-B', 'MISC-I', 'MISC-I', 'O', 'PER-B', 'PER-I']
